@@ -5,7 +5,7 @@ import 'package:amc_persona/core/constants/api_config.dart';
 class GeminiService {
   final String systemInstruction;
   static const String apiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
   GeminiService({required this.systemInstruction});
 
@@ -49,10 +49,22 @@ class GeminiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['candidates'][0]['content']['parts'][0]['text'];
-      } else if (response.statusCode == 429) {
-        return "ERROR: I'm feeling a bit tired from all the puns! Please wait about 60 seconds and try again. (Quota Exceeded)";
       } else {
-        return "ERROR: Something went wrong (Status ${response.statusCode}). Please try again later.";
+        final errorBody = response.body;
+        final statusCode = response.statusCode;
+
+        if (statusCode == 429) {
+          return "ERROR: Quota exceeded. Please wait a moment and try again.";
+        }
+
+        // Return a detailed error if possible
+        try {
+          final errorData = jsonDecode(errorBody);
+          final errorMessage = errorData['error']['message'] ?? "Unknown Error";
+          return "ERROR $statusCode: $errorMessage";
+        } catch (_) {
+          return "ERROR $statusCode: Something went wrong. Status ${response.statusCode}";
+        }
       }
     } catch (e) {
       return "ERROR: Network Error - $e";

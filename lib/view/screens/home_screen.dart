@@ -29,15 +29,37 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 60),
-              Center(
-                child: Wrap(
-                  spacing: 24, // Horizontal space between cards
-                  runSpacing: 40, // Vertical space between rows
-                  alignment: WrapAlignment.center,
-                  children: PersonaData.personas.map((persona) {
-                    return _PersonaCard(persona: persona);
-                  }).toList(),
-                ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth = constraints.maxWidth;
+
+                  // Adaptive column count logic
+                  int crossAxisCount = 2;
+                  if (availableWidth > 900) {
+                    crossAxisCount = 4;
+                  } else if (availableWidth > 600) {
+                    crossAxisCount = 3;
+                  }
+
+                  const spacing = 24.0;
+                  final cardWidth =
+                      (availableWidth - (spacing * (crossAxisCount - 1))) /
+                      crossAxisCount;
+
+                  return Center(
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: 40,
+                      alignment: WrapAlignment.center,
+                      children: PersonaData.personas.map((persona) {
+                        return _PersonaCard(
+                          persona: persona,
+                          cardSize: cardWidth.clamp(130.0, 180.0),
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 40),
             ],
@@ -50,14 +72,12 @@ class HomeScreen extends StatelessWidget {
 
 class _PersonaCard extends StatelessWidget {
   final Persona persona;
+  final double cardSize;
 
-  const _PersonaCard({required this.persona});
+  const _PersonaCard({required this.persona, required this.cardSize});
 
   @override
   Widget build(BuildContext context) {
-    // Card dimensions based on visual estimation from the image
-    const double cardSize = 150.0;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -65,10 +85,8 @@ class _PersonaCard extends StatelessWidget {
           width: cardSize,
           height: cardSize,
           child: Stack(
-            clipBehavior:
-                Clip.none, // Allow bubble to overflow slightly if needed
+            clipBehavior: Clip.none,
             children: [
-              // Main Bordered Box - Click to view Info/Detail
               GestureDetector(
                 onTap: () {
                   context.push('/persona/${persona.id}');
@@ -79,8 +97,8 @@ class _PersonaCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                      color: const Color(0xFF64FF64), // Bright green
-                      width: 5, // Thicker border
+                      color: const Color(0xFF64FF64),
+                      width: 5,
                     ),
                   ),
                   child: Center(
@@ -88,37 +106,36 @@ class _PersonaCard extends StatelessWidget {
                       padding: const EdgeInsets.all(16.0),
                       child: Icon(
                         persona.icon,
-                        size: 64,
+                        size: cardSize * 0.45, // Scale icon with card
                         color: Colors.black87,
                       ),
                     ),
                   ),
                 ),
               ),
-              // Chat Bubble Icon overlay - Click to Chat directly
               Positioned(
-                top: 10,
-                right: 10,
+                top: 8,
+                right: 8,
                 child: GestureDetector(
                   onTap: () {
                     context.push('/chat/${persona.id}');
                   },
                   child: Container(
-                    width: 36,
-                    height: 30,
+                    width: 32,
+                    height: 28,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF2E7D32), // Dark green
+                      color: Color(0xFF2E7D32),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(8),
                         topRight: Radius.circular(8),
                         bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(0), // Little tail effect
+                        bottomRight: Radius.circular(0),
                       ),
                     ),
                     child: const Icon(
                       Icons.chat_bubble_outline,
                       color: Colors.white,
-                      size: 20,
+                      size: 18,
                     ),
                   ),
                 ),
@@ -127,18 +144,17 @@ class _PersonaCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Role Text
         GestureDetector(
           onTap: () {
             context.push('/persona/${persona.id}');
           },
           child: SizedBox(
-            width: cardSize + 20, // Allow text to be slightly wider than card
+            width: cardSize + 10,
             child: Text(
               persona.role,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: Colors.black87,
                 height: 1.2,

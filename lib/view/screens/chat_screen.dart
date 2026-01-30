@@ -137,7 +137,9 @@ class _ChatBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
+          maxWidth: (MediaQuery.of(context).size.width > 700)
+              ? 500
+              : MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
           color: isUser
