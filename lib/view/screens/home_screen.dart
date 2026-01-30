@@ -162,8 +162,8 @@ class _PersonaCard extends StatelessWidget {
                     context.push('/chat/${persona.id}');
                   },
                   child: Container(
-                    width: 38,
-                    height: 38,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       color: const Color(0xFF2E7D32),
                       shape: BoxShape.circle,
@@ -179,7 +179,7 @@ class _PersonaCard extends StatelessWidget {
                     child: const Icon(
                       Icons.chat_bubble_rounded,
                       color: Colors.white,
-                      size: 18,
+                      size: 25,
                     ),
                   ),
                 ),
@@ -201,7 +201,7 @@ class _PersonaCard extends StatelessWidget {
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
-                height: 1.2,
+                height: 2.5,
                 letterSpacing: 0.1,
               ),
             ),

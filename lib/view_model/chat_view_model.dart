@@ -2,8 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amc_persona/model/message.dart';
 import 'package:amc_persona/model/persona.dart';
 import 'package:amc_persona/model/chat_session.dart';
-import 'package:amc_persona/services/remote/gemini_service.dart';
-import 'package:amc_persona/services/local/local_storage_service.dart';
+import 'package:amc_persona/repository/gemini_repository.dart';
 import 'package:uuid/uuid.dart';
 
 // Chat State
@@ -36,13 +35,13 @@ class ChatState {
 }
 
 class ChatNotifier extends FamilyNotifier<ChatState, String> {
-  late GeminiService _geminiService;
+  final _repository = GeminiRepository();
   String? _currentSessionId;
 
   @override
   ChatState build(String arg) {
-    // Load history for this persona
-    final history = LocalStorageService.getSessions(arg);
+    // Load history via Repository (MVVM pattern)
+    final history = _repository.getLocalSessions(arg);
 
     // Auto-archive when the provider is disposed (user leaves the screen)
     ref.onDispose(() {
@@ -50,12 +49,6 @@ class ChatNotifier extends FamilyNotifier<ChatState, String> {
     });
 
     return ChatState(messages: [], historySessions: history);
-  }
-
-  void _initService(Persona persona) {
-    _geminiService = GeminiService(
-      systemInstruction: persona.systemInstruction,
-    );
   }
 
   // Synchronous version for onDispose
@@ -69,15 +62,14 @@ class ChatNotifier extends FamilyNotifier<ChatState, String> {
       timestamp: DateTime.now(),
     );
 
-    // Hive boxes are already open, so put is fast
-    LocalStorageService.saveSession(session);
+    _repository.saveSession(session);
   }
 
   void archiveCurrentSession(String personaId) async {
     _archiveSync(personaId);
 
-    // Refresh history list
-    final updatedHistory = LocalStorageService.getSessions(personaId);
+    // Refresh history list via Repository
+    final updatedHistory = _repository.getLocalSessions(personaId);
     state = state.copyWith(
       messages: [], // Clear main chat
       historySessions: updatedHistory,
@@ -101,8 +93,6 @@ class ChatNotifier extends FamilyNotifier<ChatState, String> {
   Future<void> sendMessage(String text, Persona persona) async {
     if (text.trim().isEmpty) return;
 
-    _initService(persona);
-
     if (_currentSessionId == null && state.messages.isEmpty) {
       _currentSessionId = const Uuid().v4();
     }
@@ -125,7 +115,11 @@ class ChatNotifier extends FamilyNotifier<ChatState, String> {
         return {'role': m.isUser ? 'user' : 'model', 'text': m.text};
       }).toList();
 
-      final responseText = await _geminiService.generateResponse(history);
+      // Talk to Repository, not Service directly (MVVM requirement)
+      final responseText = await _repository.generateAIResponse(
+        systemInstruction: persona.systemInstruction,
+        history: history,
+      );
 
       if (responseText != null) {
         if (responseText.startsWith("ERROR:")) {

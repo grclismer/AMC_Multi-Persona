@@ -14,4 +14,12 @@ class Message {
   final DateTime timestamp;
 
   Message({required this.text, required this.isUser, required this.timestamp});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'text': text,
+      'isUser': isUser,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
 }

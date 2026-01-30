@@ -29,4 +29,13 @@ class ChatSession extends HiveObject {
     final firstMsg = messages.firstWhere((m) => m.isUser).text;
     return firstMsg.length > 30 ? '${firstMsg.substring(0, 30)}...' : firstMsg;
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'personaId': personaId,
+      'messages': messages.map((m) => m.toMap()).toList(),
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
 }
