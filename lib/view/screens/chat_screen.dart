@@ -4,6 +4,8 @@ import 'package:amc_persona/core/constants/persona_data.dart';
 import 'package:amc_persona/model/message.dart';
 import 'package:amc_persona/view_model/chat_view_model.dart';
 import 'package:amc_persona/view/widgets/history_drawer.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:lottie/lottie.dart';
 
 class ChatScreen extends ConsumerWidget {
   final String personaId;
@@ -26,36 +28,59 @@ class ChatScreen extends ConsumerWidget {
           SnackBar(
             content: Text(next.error!),
             backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
     });
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       endDrawer: HistoryDrawer(personaId: personaId),
       appBar: AppBar(
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: Icon(persona.icon, color: Colors.black),
+            Hero(
+              tag: 'persona_icon_${persona.id}',
+              child: Icon(persona.icon, color: Colors.black87, size: 24),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                persona.name,
-                style: const TextStyle(fontSize: 18),
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    persona.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    'Active Now',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.green[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        elevation: 1,
+        elevation: 0,
+        centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_comment_outlined),
+            icon: const Icon(Icons.add_comment_rounded, size: 22),
             onPressed: () {
               ref
                   .read(chatStateProvider(personaId).notifier)
@@ -65,36 +90,21 @@ class ChatScreen extends ConsumerWidget {
           ),
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
+              icon: const Icon(Icons.history_rounded, size: 22),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
               tooltip: 'History',
             ),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
         children: [
+          Container(height: 1, color: Colors.grey[100]),
           // Chat List
           Expanded(
             child: chatState.messages.isEmpty && !chatState.isLoading
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(persona.icon, size: 64, color: Colors.grey[300]),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Start a conversation with\n${persona.role}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 16,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
+                ? _EmptyChatState(persona: persona)
                 : Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 800),
@@ -105,18 +115,15 @@ class ChatScreen extends ConsumerWidget {
                         ),
                         itemCount:
                             chatState.messages.length +
-                            (chatState.isLoading ? 1 : 0),
+                            (chatState.isLoading ? 1 : 0) +
+                            (chatState.error != null ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (chatState.error != null &&
+                              index == chatState.messages.length) {
+                            return _ErrorCard(error: chatState.error!);
+                          }
                           if (index >= chatState.messages.length) {
-                            return const Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: EdgeInsets.all(12.0),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            );
+                            return _ThinkingIndicator();
                           }
                           final message = chatState.messages[index];
                           return _ChatBubble(
@@ -148,6 +155,147 @@ class ChatScreen extends ConsumerWidget {
   }
 }
 
+class _ErrorCard extends StatelessWidget {
+  final String error;
+  const _ErrorCard({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeIn(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red[50],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.red[100]!),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.red[400],
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Service Notice',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD32F2F),
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              error,
+              style: TextStyle(
+                color: Colors.red[900],
+                fontSize: 14,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyChatState extends StatelessWidget {
+  final dynamic persona;
+  const _EmptyChatState({required this.persona});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: FadeIn(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Icon(persona.icon, size: 50, color: Colors.grey[400]),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'How can I help you today?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey[800],
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start a conversation with ${persona.name}',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThinkingIndicator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey[100]!),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: Lottie.network(
+                'https://lottie.host/684c8a8c-a19c-46a4-9e32-a54190c102bd/zW7jA5v2E3.json',
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'AI is thinking...',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ChatBubble extends StatelessWidget {
   final Message message;
   final Color personaColor;
@@ -158,16 +306,26 @@ class _ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = message.isUser;
     final screenWidth = MediaQuery.of(context).size.width;
-    final maxBubbleWidth = screenWidth > 700 ? 550.0 : screenWidth * 0.8;
+    final maxBubbleWidth = screenWidth > 700 ? 550.0 : screenWidth * 0.85;
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         constraints: BoxConstraints(maxWidth: maxBubbleWidth),
         decoration: BoxDecoration(
-          color: isUser ? Colors.grey[100] : const Color(0xFFE8F5E9),
+          color: isUser ? const Color(0xFFF1F3F4) : Colors.white,
+          gradient: isUser
+              ? LinearGradient(
+                  colors: [Colors.grey[200]!, Colors.grey[100]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : const LinearGradient(
+                  colors: [Color(0xFFFFFFFF), Color(0xFFF9FFF9)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -180,28 +338,87 @@ class _ChatBubble extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              offset: const Offset(0, 2),
-              blurRadius: 4,
+              color: Colors.black.withOpacity(0.04),
+              offset: const Offset(0, 3),
+              blurRadius: 8,
             ),
           ],
           border: !isUser
-              ? Border.all(
-                  color: const Color(0xFF64FF64).withValues(alpha: 0.5),
-                  width: 1,
-                )
-              : Border.all(color: Colors.grey[200]!, width: 1),
+              ? Border.all(color: personaColor.withOpacity(0.15), width: 1.5)
+              : Border.all(color: Colors.grey[200]!, width: 0.5),
         ),
-        child: Text(
-          message.text,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-            height: 1.4,
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: isUser
+            ? Text(
+                message.text,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black87,
+                  height: 1.5,
+                ),
+              )
+            : MarkdownBody(
+                data: message.text,
+                selectable: true,
+                styleSheet: MarkdownStyleSheet(
+                  p: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black87,
+                    height: 1.5,
+                  ),
+                  h1: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  code: TextStyle(
+                    backgroundColor: Colors.grey[100],
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                  ),
+                  codeblockDecoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
       ),
     );
+  }
+}
+
+// Simple Fade In animation helper
+class FadeIn extends StatefulWidget {
+  final Widget child;
+  const FadeIn({super.key, required this.child});
+
+  @override
+  State<FadeIn> createState() => _FadeInState();
+}
+
+class _FadeInState extends State<FadeIn> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(opacity: _animation, child: widget.child);
   }
 }
 

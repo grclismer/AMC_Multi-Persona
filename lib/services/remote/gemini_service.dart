@@ -36,7 +36,7 @@ class GeminiService {
           'contents': contents,
           'generationConfig': {
             'temperature': 0.7,
-            'maxOutputTokens': 800,
+            'maxOutputTokens': 1024,
             'topP': 0.95,
             'topK': 40,
           },
@@ -50,14 +50,21 @@ class GeminiService {
         if (data['candidates'] != null && data['candidates'].isNotEmpty) {
           return data['candidates'][0]['content']['parts'][0]['text'];
         } else {
-          return "No response generated. Please try again.";
+          return "ERROR: The AI was unable to generate a response for this request.";
         }
       } else {
-        // Helpful for debugging: returns the specific API error
-        return "ERROR ${response.statusCode}: ${response.body}";
+        final statusCode = response.statusCode;
+        if (statusCode == 429) {
+          return "ERROR: [QUOTA_LIMIT] You've reached your free daily limit for this Persona. Your quota will reset automatically within 24 hours. (Tip: Try a different Persona or check back tomorrow!)";
+        } else if (statusCode == 404) {
+          return "ERROR: [SERVER_NOT_FOUND] The AI service is currently unavailable for this model. Please try again later.";
+        } else if (statusCode == 400) {
+          return "ERROR: [INVALID_REQUEST] There was a technical issue with the message format. Please try rephrasing.";
+        }
+        return "ERROR: [$statusCode] Something went wrong on the server. Please try again later.";
       }
     } catch (e) {
-      return "ERROR: $e";
+      return "ERROR: [NETWORK_ISSUE] Unable to connect to the AI. Check your internet connection.";
     }
   }
 }

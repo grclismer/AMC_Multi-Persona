@@ -162,6 +162,14 @@ class _HistoryCard extends ConsumerWidget {
               .loadHistoricalSession(session);
           Navigator.pop(context); // Close drawer
         },
+        trailing: IconButton(
+          icon: Icon(Icons.delete_outline, color: Colors.red[300], size: 20),
+          onPressed: () {
+            ref
+                .read(chatStateProvider(persona.id).notifier)
+                .deleteHistorySession(session.id, persona.id);
+          },
+        ),
       ),
     );
   }

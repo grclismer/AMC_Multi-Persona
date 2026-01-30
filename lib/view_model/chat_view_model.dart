@@ -34,7 +34,7 @@ class ChatState {
   }
 }
 
-class ChatNotifier extends FamilyNotifier<ChatState, String> {
+class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
   final _repository = GeminiRepository();
   String? _currentSessionId;
 
@@ -88,6 +88,13 @@ class ChatNotifier extends FamilyNotifier<ChatState, String> {
 
   void startNewChat(String personaId) {
     archiveCurrentSession(personaId);
+  }
+
+  Future<void> deleteHistorySession(String sessionId, String personaId) async {
+    await _repository.deleteSession(sessionId);
+    // Refresh history list
+    final updatedHistory = _repository.getLocalSessions(personaId);
+    state = state.copyWith(historySessions: updatedHistory);
   }
 
   Future<void> sendMessage(String text, Persona persona) async {
@@ -148,6 +155,6 @@ class ChatNotifier extends FamilyNotifier<ChatState, String> {
 }
 
 final chatStateProvider =
-    NotifierProvider.family<ChatNotifier, ChatState, String>(() {
+    AutoDisposeNotifierProviderFamily<ChatNotifier, ChatState, String>(() {
       return ChatNotifier();
     });
