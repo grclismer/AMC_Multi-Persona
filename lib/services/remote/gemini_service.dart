@@ -5,7 +5,7 @@ import 'package:amc_persona/core/constants/api_config.dart';
 class GeminiService {
   final String systemInstruction;
   static const String apiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   GeminiService({required this.systemInstruction});
 
