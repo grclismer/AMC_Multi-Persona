@@ -289,71 +289,142 @@ class _MagnifiedPersonaCard extends StatelessWidget {
   }
 }
 
-class _ComingSoonCard extends StatelessWidget {
+class _ComingSoonCard extends StatefulWidget {
   const _ComingSoonCard();
 
   @override
+  State<_ComingSoonCard> createState() => _ComingSoonCardState();
+}
+
+class _ComingSoonCardState extends State<_ComingSoonCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.95), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 50),
+    ]).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _colorAnimation = ColorTween(
+      begin: Colors.black.withOpacity(0.04),
+      end: Colors.red.withOpacity(0.5),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _triggerLockedAnimation() {
+    if (_controller.isAnimating) return;
+    _controller.forward().then((_) => _controller.reverse());
+
+    // Optional: Haptic feedback could be added here if requested,
+    // keeping it strictly visual for now as per instructions.
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: AppGlassCard(
-        borderRadius: 24,
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: GestureDetector(
+            onTap: _triggerLockedAnimation,
+            child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                Icons.lock_clock_rounded,
-                size: 36,
-                color: Colors.grey,
-              ),
-            ),
-            const Spacer(),
-            const Text(
-              'New Persona',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Text(
-                  "Coming soon...",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: _colorAnimation.value!,
+                    blurRadius: 10 + (_controller.value * 10), // Glow expands
+                    spreadRadius: _controller.value * 2, // Glow spreads
+                    offset: const Offset(0, 5),
                   ),
+                ],
+              ),
+              child: AppGlassCard(
+                borderRadius: 24,
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        Icons.lock_clock_rounded,
+                        size: 36,
+                        color: Color.lerp(
+                          Colors.grey,
+                          Colors.red,
+                          _controller.value,
+                        ), // Icon also turns red
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'New Persona',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color.lerp(
+                          Colors.grey,
+                          Colors.red,
+                          _controller.value,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: Color.lerp(
+                          Colors.grey.withOpacity(0.1),
+                          Colors.red.withOpacity(0.1),
+                          _controller.value,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Coming soon...",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color.lerp(
+                              Colors.grey,
+                              Colors.red,
+                              _controller.value,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
