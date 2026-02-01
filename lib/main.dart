@@ -7,6 +7,7 @@ import 'package:amc_persona/view/screens/chat_screen.dart';
 
 import 'package:amc_persona/services/local/local_storage_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:amc_persona/core/theme/design_system.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,14 +54,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'AMC Persona',
       routerConfig: _router,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50),
-        ), // Green theme
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Roboto',
-      ),
+      theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
     );
   }

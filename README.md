@@ -1,16 +1,17 @@
 # amc_persona
 
-A new Flutter project.
+To run this Chatbot completely, Please follow the steps below:
+1. Go to https://aistudio.google.com/?timeRange=last-1-day
+2. Click on "Get API Key"
+3. create a new project Create API Key
+4. Click on "Create API Key"
+5. Click the First column under the key to to get the full API Key
+6. Copy the API Key
+7. Go to the root and add or create new file named .env
+8. Add the following line to the .env file,
+    GEMINI_API_KEY="YOUR_API_KEY" remove the (" ") from the API Key 
+9. Replace the API Key with the copied API Key from the google ai studio
+10. Run the Chatbot by running the command "flutter run" in the terminal
+        Viowalaahh namers
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Tapos na po yung Chatbot, mga boss!

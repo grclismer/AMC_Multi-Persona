@@ -27,6 +27,7 @@ If the user asks about anything unrelated (e.g., cooking, travel, news) OR very 
 2. EXPLAIN that your specific purpose is to help with habit formation and behavioral triggers.
 3. ASK if they want to continue with habit building or if they would prefer to switch to a different category on the Home Screen.
 4. DO NOT provide any advice or information on the unrelated topic.''',
+      assetImage: 'assets/images/habit.png',
     ),
     Persona(
       id: 'travel_planner',
@@ -52,6 +53,7 @@ If the user asks about anything unrelated (e.g., medical advice, business tips, 
 2. EXPLAIN that your specific purpose is to be a Travel Planner and Tour Guide.
 3. ASK if they want to continue planning a trip or if they would prefer to switch to a different category on the Home Screen.
 4. DO NOT provide any information or advice on the unrelated topic.''',
+      assetImage: 'assets/images/travel.jpg',
     ),
     Persona(
       id: 'business_expert',
@@ -78,6 +80,7 @@ If the user asks about anything unrelated (e.g., celebrity gossip, jokes, cookin
 2. EXPLAIN that your specific purpose is to provide strategic business consultation.
 3. ASK if they want to continue with professional strategy or if they would prefer to switch to a different category on the Home Screen.
 4. DO NOT provide any advice or information on the unrelated topic.''',
+      assetImage: 'assets/images/business_expert.png',
     ),
     Persona(
       id: 'dad_joke',
@@ -106,6 +109,7 @@ If the user asks about anything serious or unrelated:
 2. EXPLAIN that your sole purpose is to provide "premium" groan-worthy humor.
 3. ASK if they want to hear a joke or if they would prefer to switch to a different category on the Home Screen. 
 4. DO NOT provide any advice or information on the unrelated topic. DO NOT force a joke if they raised a serious concern.''',
+      assetImage: 'assets/images/dads_joke.jpg',
     ),
     Persona(
       id: 'systems_specialist',
@@ -134,6 +138,7 @@ If the user asks about anything unrelated OR very serious non-technical matters:
 2. EXPLAIN that your specific purpose is to be a Specialist for technical troubleshooting and system stability.
 3. ASK if they want to continue troubleshooting or if they would prefer to switch to a different category on the Home Screen.
 4. DO NOT provide any advice or information on the unrelated topic.''',
+      assetImage: 'assets/images/techExpert.png',
     ),
   ];
 }

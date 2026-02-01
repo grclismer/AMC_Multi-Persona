@@ -9,6 +9,7 @@ class Persona {
   final IconData icon; // Start with IconData, later can be ImageAsset
   final Color color;
   final String systemInstruction;
+  final String? assetImage;
 
   const Persona({
     required this.id,
@@ -19,5 +20,6 @@ class Persona {
     required this.icon,
     required this.color,
     required this.systemInstruction,
+    this.assetImage,
   });
 }
